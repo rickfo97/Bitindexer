@@ -19,16 +19,22 @@ class TorrentModel
         return false;
     }
 
-    public static function getTorrents($page = 1, $limit = 25)
+    public static function getTorrents($category = 0, $page = 1, $limit = 25)
     {
         if ($page <= 0) {
             $page = 1;
         }
         $page = (($page - 1) * $limit);
         $dbc = Database::getFactory()->getConnection();
-        $stmt = $dbc->prepare("SELECT Torrent.id, info_hash, Torrent.name, description, magnet, date_added as added, seed, leech, Torrent.total_size as size, Category.id as category_id, Category.name as category_name, User.username FROM Torrent LEFT JOIN User ON Torrent.user_id = User.id LEFT JOIN Category ON Torrent.category_id = Category.id LIMIT $page, $limit");
-        $stmt->execute();
-        return $stmt->fetchAll();
+        $stmt = $dbc->prepare("SELECT Torrent.id, info_hash, Torrent.name, description, magnet, date_added as added, seed, leech, Torrent.total_size as size, Category.id as category_id, Category.name as category_name, User.username FROM Torrent LEFT JOIN User ON Torrent.user_id = User.id LEFT JOIN Category ON Torrent.category_id = Category.id " . ($category > 0 ? "WHERE Category.id = :category OR Category.parent_id = :category" : '') . " GROUP BY Torrent.id LIMIT $page, $limit");
+        $parameters = [];
+        if ($category > 0){
+            $parameters[':category'] = $category;
+        }
+        $stmt->execute($parameters);
+        $torrents = $stmt->fetchAll();
+        $torrents['query'] = $stmt->queryString;
+        return $torrents;
     }
 
     public static function addTorrent($torrent)
@@ -64,11 +70,12 @@ class TorrentModel
 
     }
 
-    public static function torrentPages($limit = 25)
+    public static function torrentPages($query, $parameters = [], $limit = 25)
     {
         $dbc = Database::getFactory()->getConnection();
-        $stmt = $dbc->prepare("SELECT (COUNT(*) / $limit) as pages FROM Torrent");
-        $stmt->execute();
+        $sql = preg_replace("/.*FROM(.*)LIMIT.*/i", 'SELECT (COUNT(*) / ' . $limit . ') as pages FROM $1', $query);
+        $stmt = $dbc->prepare($sql);
+        $stmt->execute($parameters);
         return ceil($stmt->fetchObject()->pages);
     }
 
@@ -77,9 +84,7 @@ class TorrentModel
         $dbc = Database::getFactory()->getConnection();
         $stmt = $dbc->prepare("SELECT id, info_hash, name, description, date_added FROM Torrent ORDER BY date_added DESC LIMIT $limit");
         $stmt->execute();
-        $torrents = array();
-        while ($torrents[] = $stmt->fetchObject()) ;
-        return $torrents;
+        return $stmt->fetchAll();
     }
 
     //TODO search based on name maybe description. Add to search terms.

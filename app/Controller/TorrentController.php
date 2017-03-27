@@ -12,7 +12,17 @@ class TorrentController
 {
     public function browse($page = 1)
     {
-        return View::render('torrent/browse.twig', ['torrents' => TorrentModel::getTorrents($page), 'page' => ['current' => $page, 'max' => TorrentModel::torrentPages()]]);
+        $torrents = [];
+        $pages = 0;
+        if(isset($_REQUEST['category']) && $_REQUEST['category'] > 0){
+            $torrents = TorrentModel::getTorrents($_REQUEST['category'], $page);
+            $pages = TorrentModel::torrentPages($torrents['query'], [':category' => $_REQUEST['category']]);
+        }else{
+            $torrents = TorrentModel::getTorrents(0, $page);
+            $pages = TorrentModel::torrentPages($torrents['query']);
+        }
+        unset($torrents['query']);
+        return View::render('torrent/browse.twig', ['torrents' => $torrents, 'page' => ['current' => $page, 'max' => $pages]]);
     }
 
     public function showPage($id)
