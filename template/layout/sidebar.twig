@@ -1,0 +1,17 @@
+<nav class="col-md-2">
+    <div class="well">
+        <ul class="list-group">
+            <a href="/" class="list-group-item {{ current_url == '/' ? 'active'}}">Home</a>
+            <a href="/browse" class="list-group-item {{ current_url in ['/browse', '/search'] ? 'active'}}">Browse</a>
+            {% if user %}
+                <a href="/upload" class="list-group-item {{ current_url in ['/upload'] ? 'active'}}">Upload</a>
+                <a href="/profile" class="list-group-item {{ current_url in ['/profile', '/profile/edit'] ? 'active'}}">Profile</a>
+                <a href="/logout" class="list-group-item">Logout</a>
+            {% else %}
+                <a href="/login" class="list-group-item {{ current_url in ['/login'] ? 'active'}}">Login</a>
+                <a href="/register" class="list-group-item {{ current_url in ['/register'] ? 'active'}}">Register</a>
+            {% endif %}
+            <a href="/about" class="list-group-item {{ current_url in ['/about'] ? 'active'}}">About</a>
+        </ul>
+    </div>
+</nav>

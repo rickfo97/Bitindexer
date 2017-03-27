@@ -1,0 +1,22 @@
+{% if page.max != 0 %}
+    <ul class="pagination">
+        {% if page.current != 1 %}
+            <li><a href="/browse{{ url_query ?: '' }}"><i class="fa fa-angle-double-left"></i></a></li>
+            <li><a href="/browse/{{ page.current - 1 }}{{ url_query ?: '' }}"><i class="fa fa-angle-left"></i></a></li>
+        {% else %}
+            <li class="disabled"><a class="fa fa-angle-left"></a></li>
+        {% endif %}
+        {% for i in (page.current - 5)..(page.current + 5) %}
+            {% if ((i > 0) and (i <= page.max)) %}
+                <li {{ (i == page.current) ? 'class="active"' }}><a
+                            href="/browse/{{ i }}{{ url_query ?: '' }}">{{ i }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if page.current != page.max %}
+            <li><a href="/browse/{{ page.current + 1 }}{{ url_query ?: '' }}"><i class="fa fa-angle-right"></i></a></li>
+            <li><a href="/browse/{{ page.max }}{{ url_query ?: '' }}"><i class="fa fa-angle-double-right"></i></a></li>
+        {% else %}
+            <li class="disabled"><a class="fa fa-angle-right"></a></li>
+        {% endif %}
+    </ul>
+{% endif %}

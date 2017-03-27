@@ -1,0 +1,43 @@
+{% extends "layout/layout.twig" %}
+
+{% block title %}Browse torrents{% endblock %}
+{% block head %}
+    {{ parent() }}
+{% endblock %}
+{% block pagetitle %}
+    Browse Torrents
+{% endblock %}
+{% block content %}
+    {% include "layout/search.twig" %}
+    <div class="row" id="browse-table">
+        <div class="col-sm-12" id="browse-head">
+            <div class="row">
+                <div class="col-sm-1">Category</div>
+                <div class="col-sm-3">Name</div>
+                <div class="col-sm-3">Added</div>
+                <div class="col-sm-1">Size</div>
+                <div class="col-sm-1">Seeds</div>
+                <div class="col-sm-1">Leech</div>
+                <div class="col-sm-2">Uploader</div>
+            </div>
+        </div>
+        <div class="col-sm-12" id="browse-body">
+            {% for torrent in torrents %}
+                <div class="row torrent">
+                    <div class="col-sm-1"><a href="/browse?category={{ torrent.category_id }}">{{ torrent.category_name }}</a></div>
+                    <div class="col-sm-3"><a href="/torrent/{{ torrent.id }}">{{ torrent.name }}</a></div>
+                    <div class="col-sm-3">{{ torrent.added }}</div>
+                    <div class="col-sm-1">{{ torrent.size }}</div>
+                    <div class="col-sm-1">{{ torrent.seed }}</div>
+                    <div class="col-sm-1">{{ torrent.leech }}</div>
+                    <div class="col-sm-2">{{ torrent.username ?: 'Anonymous' }}</div>
+                </div>
+            {% else %}
+                <div class="row text-center">
+                    <div class="col-sm-12">No torrents found</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% include "layout/pagenate.twig" %}
+{% endblock %}

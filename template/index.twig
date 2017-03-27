@@ -1,0 +1,32 @@
+{% extends "layout/layout.twig" %}
+
+{% block title %}Index{% endblock %}
+{% block head %}
+    {{ parent() }}
+{% endblock %}
+{% block pagetitle %}
+    Rickfo torrents
+{% endblock %}
+{% block content %}
+    {% include "layout/search.twig" %}
+    <div class="row">
+        <div class="col-md-4 col-md-offset-2">
+            {% for post in news %}
+                <div class="post">
+                    {{ post.post }}
+                </div>
+            {% else %}
+                No posts
+            {% endfor %}
+        </div>
+        <div class="col-md-4">
+            <ul class="list-group">
+                {% for torrent in torrents %}
+                    <a href="/torrent/{{ torrent.id }}" class="list-group-item">{{ torrent.name }}</a>
+                {% else %}
+                    No torrents
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

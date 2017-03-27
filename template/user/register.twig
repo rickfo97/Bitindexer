@@ -1,0 +1,30 @@
+{% extends "layout/layout.twig" %}
+
+{% block title %}Register{% endblock %}
+{% block head %}
+    {{ parent() }}
+{% endblock %}
+{% block pagetitle %}
+    Register
+{% endblock %}
+{% block content %}
+    <form id="login" method="post" action="/register">
+        <div class="form-group">
+            <label for="username" class="control-label">Username:</label>
+            <input type="text" class="form-control form-input" id="username" name="username" placeholder="Username" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="email" class="control-label">Email address:</label>
+            <input type="email" class="form-control form-input" name="email" id="email" placeholder="Email address" required>
+        </div>
+        <div class="form-group">
+            <label for="pwd" class="control-label">Password:</label>
+            <input type="password" class="form-control form-input" name="password" id="pwd" placeholder="Password" autocomplete="off" required>
+        </div>
+        <div class="form-group">
+            <label for="vpwd" class="control-label">Verify password:</label>
+            <input type="password" class="form-control form-input" name="verify_password" id="vpwd" placeholder="Password" autocomplete="off" required>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Register</button>
+    </form>
+{% endblock %}

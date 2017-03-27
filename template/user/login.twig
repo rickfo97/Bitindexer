@@ -1,0 +1,27 @@
+{% extends "layout/layout.twig" %}
+{% macro input(name, value, type, size) %}
+    <input type="{{ type|default('text') }}" name="{{ name }}" value="{{ value|e }}" size="{{ size|default(20) }}" />
+{% endmacro %}
+{% block title %}Login{% endblock %}
+{% block head %}
+    {{ parent() }}
+{% endblock %}
+{% block pagetitle %}
+    Login
+{% endblock %}
+{% block content %}
+    <form id="login" method="post" action="/login">
+        <div class="form-group">
+            <label for="email" class="control-label">Email address:</label>
+            <input type="email" class="form-control form-input" name="email" placeholder="E-mail" id="email" required autofocus>
+        </div>
+        <div class="form-group">
+            <label for="pwd" class="control-label">Password:</label>
+            <input type="password" class="form-control form-input" name="password" placeholder="password" id="pwd" required>
+        </div>
+        <div class="checkbox">
+            <label><input type="checkbox" value="true"> Remember me</label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+    </form>
+{% endblock %}

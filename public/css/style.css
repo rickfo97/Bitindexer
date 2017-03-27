@@ -1,0 +1,28 @@
+body{
+    background-color: #272727;
+}
+#content{
+    margin-top: 50px;
+}
+#browse-table{
+    margin-top: 20px;
+}
+.torrent:nth-child(odd){
+    background-color: #d4d4d4;
+}
+.torrent:hover{
+    background-color: #bdbdbd;
+}
+.form-input{
+    height: auto;
+    font-size: 16px;
+
+}
+#upload{
+    max-width: 45%;
+    margin:0 auto;
+}
+#login{
+    max-width: 35%;
+    margin:0 auto;
+}
