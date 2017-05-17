@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Rickardh
- * Date: 2017-03-26
- * Time: 22:16
- */
 
 namespace App\Core;
 

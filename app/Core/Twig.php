@@ -2,6 +2,9 @@
 
 namespace App\Core;
 
+use \App\Core\Text;
+use \App\Core\Config;
+
 class Twig
 {
 
@@ -16,6 +19,10 @@ class Twig
                 'debug' => true,
                 'cache' => __DIR__ . '/../../cache/twig'
             ));
+            self::$twig->addFunction(new \Twig_Function('config', function ($key) {
+                return Config::get($key);
+            }));
+            self::$twig->addFilter(new \Twig_Filter('format_bytes', '\App\Core\Text::formatBytes'));
         }
         return self::$twig;
     }

@@ -1,4 +1,4 @@
-{% extends "layout/layout.twig" %}
+{% extends "layout/splash.twig" %}
 
 {% block title %}Apply{% endblock %}
 {% block head %}
@@ -8,5 +8,24 @@
     Apply
 {% endblock %}
 {% block content %}
+    <form action="/apply" method="post" class="text-center">
+        <div class="input-group">
+            <label for="apply-country">Country:</label>
+            <input name="country" id="apply-country" type="text" maxlength="100" class="form-control" required>
+        </div>
+        <div class="input-group">
+            <label for="apply-email">Email:</label>
+            <input name="email" id="apply-email" type="email" maxlength="255" class="form-control" required>
+        </div>
+        <div class="input-group">
+            <label for="apply-reason">Why do you want to join:</label>
+            <textarea name="reason" id="apply-reason" maxlength="300" class="form-control" required></textarea>
+        </div>
+        <div class="input-group">
+            <label for="apply-offer">What can you offer:</label>
+            <textarea name="offer" id="apply-offer" maxlength="300" class="form-control" required></textarea>
+        </div>
+        <input class="btn btn-primary" type="submit" value="Apply">
+    </form>
 
 {% endblock %}

@@ -9,35 +9,35 @@
 {% endblock %}
 {% block content %}
     {% include "layout/search.twig" %}
-    <div class="row" id="browse-table">
-        <div class="col-sm-12" id="browse-head">
-            <div class="row">
-                <div class="col-sm-1">Category</div>
-                <div class="col-sm-3">Name</div>
-                <div class="col-sm-3">Added</div>
-                <div class="col-sm-1">Size</div>
-                <div class="col-sm-1">Seeds</div>
-                <div class="col-sm-1">Leech</div>
-                <div class="col-sm-2">Uploader</div>
-            </div>
-        </div>
-        <div class="col-sm-12" id="browse-body">
-            {% for torrent in torrents %}
-                <div class="row torrent">
-                    <div class="col-sm-1"><a href="/browse?category={{ torrent.category_id }}">{{ torrent.category_name }}</a></div>
-                    <div class="col-sm-3"><a href="/torrent/{{ torrent.id }}">{{ torrent.name }}</a></div>
-                    <div class="col-sm-3">{{ torrent.added }}</div>
-                    <div class="col-sm-1">{{ torrent.size }}</div>
-                    <div class="col-sm-1">{{ torrent.seed }}</div>
-                    <div class="col-sm-1">{{ torrent.leech }}</div>
-                    <div class="col-sm-2">{{ torrent.username ?: 'Anonymous' }}</div>
-                </div>
-            {% else %}
-                <div class="row text-center">
-                    <div class="col-sm-12">No torrents found</div>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
+    <table class="table table-striped text-left">
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th>Name</th>
+                <th>Added</th>
+                <th>Size</th>
+                <th>Seeds</th>
+                <th>Leech</th>
+                <th>Uploader</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for torrent in torrents %}
+            <tr>
+                <td><a href="/browse?category={{ torrent.category_id }}">{{ torrent.category_icon ?? torrent.category_name }}</a></td>
+                <td><a href="/torrent/{{ torrent.id }}">{{ torrent.name }}</a></td>
+                <td>{{ torrent.added }}</td>
+                <td>{{ torrent.size|format_bytes }}</td>
+                <td class="seeds">{{ torrent.seed }}</td>
+                <td class="leech">{{ torrent.leech }}</td>
+                <td>{{ torrent.hide_user ? 'Anonymous' : (torrent.username ?: 'Anonymous') }}</td>
+            </tr>
+        {% else %}
+            <tr>
+                <td>No torrents found</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
     {% include "layout/pagenate.twig" %}
 {% endblock %}

@@ -57,8 +57,8 @@ class Route
                             return call_user_func_array(array(new $controller, $objectInfo[1]), $params);
                         }
                     }
-                    if (is_callable($path['callback'])) {
-                        return call_user_func_array($path['callback'], $params);
+                    if (is_callable('\\App\\Controller\\' . $path['callback'])) {
+                        return call_user_func_array('\\App\\Controller\\' . $path['callback'], $params);
                     }
                 }
             }
@@ -73,7 +73,7 @@ class Route
         $params = array();
         if ((sizeof($uriParts) == sizeof($matchParts)) || (strpos($uri, '?') !== false)) {
             foreach ($uriParts as $key => $part) {
-                if (strpos($part, '{{') === false) {
+                if (strpos($part, '{') === false) {
                     if ($part != $matchParts[$key]) {
                         return false;
                     }

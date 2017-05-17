@@ -26,3 +26,9 @@ body{
     max-width: 35%;
     margin:0 auto;
 }
+.seeds{
+    color: #0F0;
+}
+.leech{
+    color: #F00;
+}

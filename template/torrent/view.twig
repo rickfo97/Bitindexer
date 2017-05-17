@@ -8,5 +8,6 @@
     {{ torrent.name }}
 {% endblock %}
 {% block content %}
-
+    {#<a class="btn btn-primary" href="/torrents/{{ torrent.id }}.torrent" download="{{ torrent.name }}.torrent">Download</a>#}
+    <a class="btn btn-primary" href="/download/{{ torrent.id }}">Download</a>
 {% endblock %}

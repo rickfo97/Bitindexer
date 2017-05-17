@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Core\Api;
+use App\Core\Config;
 use App\Core\Route;
+use App\Core\Session;
 use App\Core\View;
 use App\Core\Redirect;
 use App\Model\UserModel;
@@ -10,29 +13,50 @@ use App\Model\UserModel;
 class UserController
 {
 
-    public function loginPage()
+    public function __construct()
     {
-        return View::render('user/login.twig');
+        if (Config::get('private') && Session::getUser() == false){
+            Redirect::to('login');
+        }
     }
 
-    public function registerPage()
+    public static function loginPage()
     {
-        return View::render('user/register.twig');
+        echo 'login';
+        if (Config::get('private') && Session::getUser() == false){
+            return View::render('login');
+        }
+        return View::render('user/login');
     }
 
-    public function applyPage()
+    public static function registerPage()
     {
-        return View::render('user/apply.twig');
+        if (Config::get('register')) {
+            return View::render('user/register');
+        }
+        if (Config::get('apply')){
+            Redirect::to('apply');
+        }
+    }
+
+    public static function applyPage()
+    {
+        if (Config::get('apply')){
+            return View::render('user/apply');
+        }
+        if (Config::get('register')) {
+            Redirect::to('register');
+        }
     }
 
     public function profilePage()
     {
-        return View::render('user/profile.twig');
+        return View::render('user/profile');
     }
 
     public function editPage()
     {
-        return View::render('user/edit.twig');
+        return View::render('user/edit');
     }
 
     public function logout()
@@ -47,7 +71,7 @@ class UserController
 
     }
 
-    public function login()
+    public static function login()
     {
         $email = $_POST['email'];
         $password = $_POST['password'];
@@ -55,7 +79,7 @@ class UserController
         if (!is_array($user) && $user !== false) {
             $_SESSION['user_id'] = $user;
             print_r($_SESSION);
-            Redirect::to('browse');
+            Redirect::to('');
         }
         if (Route::$ajax){
             return json_encode($user);
@@ -63,8 +87,11 @@ class UserController
         Redirect::to('login');
     }
 
-    public function register()
+    public static function register()
     {
+        if(!Config::get('register')){
+            Redirect::to('login');
+        }
         $data = array(
             'username' => $_POST['username'],
             'email' => $_POST['email'],
@@ -74,7 +101,8 @@ class UserController
         if ($data['password'] !== $data['verify_password'])
             return json_encode(['success' => false, 'error' => 'Password doesn\'t match']);
         $user = UserModel::registerUser($data['username'], $data['email'], $data['password']);
-        if ($user === true) {
+        if ($user) {
+            Api::callTracker('user', 'add', ['torrent_pass' => $user->torrent_pass]);
             if(Route::$ajax){
                 return json_encode(['success' => true]);
             }
@@ -87,9 +115,29 @@ class UserController
         }
     }
 
-    //TODO Apply to become a member of site
-    public function apply()
+    public function test()
     {
+        return View::render('admin/dashboard');
+    }
 
+    //TODO Apply to become a member of site
+    public static function apply()
+    {
+        if (!Config::get('apply')){
+            Redirect::to('login');
+        }
+        if (UserModel::getUserByEmail($_POST['email'])){
+            Redirect::to('apply');
+        }
+        //TODO Fetch and validate
+        if (UserModel::applyUser($_POST['country'], $_POST['email'], $_POST['reason'], $_POST['offer'])){
+            Redirect::to('apply/success');
+        }
+        Redirect::to('apply');
+    }
+
+    public static function siteLogin()
+    {
+        return View::render('login');
     }
 }

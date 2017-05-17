@@ -1,0 +1,74 @@
+{% extends "layout/layout.twig" %}
+{% block content %}
+    <div class="row">
+        <div class="col-sm-4">
+            <h1>Add user</h1>
+            <input class="form-control" type="text" name="user_id" id="user_add_id" placeholder="user id">
+            <button class="btn btn-primary" type="button" onclick="addUser()">Add</button>
+        </div>
+        <div class="col-sm-4">
+            <h1>Change user</h1>
+            <input class="form-control" type="text" name="user_id" id="user_old_id" placeholder="user id">
+            <input class="form-control" type="text" name="user_id" id="user_new_id" placeholder="user id">
+            <button class="btn btn-primary" type="button" onclick="changeUser()">Add</button>
+        </div>
+        <div class="col-sm-4">
+            <h1>Remove user</h1>
+            <input class="form-control" type="text" name="user_id" id="user_remove_id" placeholder="user id">
+            <button class="btn btn-primary" type="button" onclick="removeUser()">Add</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <h1>Update user</h1>
+            <input class="form-control" type="text" name="user_id" id="user_update_id" placeholder="user id">
+            <button class="btn btn-primary" type="button" onclick="updateUser()">Add</button>
+        </div>
+        <div class="col-sm-4">
+            <h1>Update Settings</h1>
+            <form>
+                <input class="form-control" type="text" name="db_host" placeholder="db_host">
+                <input class="form-control" type="text" name="db_name" placeholder="db_name">
+                <input class="form-control" type="text" name="db_user" placeholder="db_user">
+                <input class="form-control" type="text" name="db_password" placeholder="db_password">
+                <input type="submit" class="btn btn-primary">
+            </form>
+        </div>
+    </div>
+    <script>
+        var gAPI = "7786319734f24a0254d4f0f953db7c75";
+        function addUser() {
+            $.post('https://sportleague.rickfo.se/api/user/add', {
+                'auth_token': gAPI,
+                'torrent_pass': $("#user_add_id").val()
+            }, function (data) {
+                console.log(data)
+            })
+        }
+        function changeUser() {
+            $.post('https://sportleague.rickfo.se/api/user/change', {
+                'auth_token': gAPI,
+                'torrent_pass': $("#user_old_id").val(),
+                'new_pass': $('#user_new_id').val()
+            }, function (data) {
+                console.log(data)
+            })
+        }
+        function removeUser() {
+            $.post('https://sportleague.rickfo.se/api/user/remove', {
+                'auth_token': gAPI,
+                'torrent_pass': $("#user_remove_id").val()
+            }, function (data) {
+                console.log(data)
+            })
+        }
+        function updateUser() {
+            $.post('https://sportleague.rickfo.se/api/user/update', {
+                'auth_token': gAPI,
+                'torrent_pass': $("#user_update_id").val()
+            }, function (data) {
+                console.log(data)
+            })
+        }
+    </script>
+{% endblock %}

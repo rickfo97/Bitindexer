@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\Core\Database;
 use App\Core\Config;
+use App\Core\Text;
 
 class UserModel
 {
@@ -24,6 +25,17 @@ class UserModel
         $dbc = Database::getFactory()->getConnection();
         $stmt = $dbc->prepare("SELECT username, email, torrent_pass FROM User WHERE username = :username LIMIT 1");
         $stmt->execute(array(':username' => $username));
+        if ($user = $stmt->fetchObject()) {
+            return $user;
+        }
+        return null;
+    }
+
+    public static function getUserByEmail($email)
+    {
+        $dbc = Database::getFactory()->getConnection();
+        $stmt = $dbc->prepare("SELECT username, email, torrent_pass FROM User WHERE email = :email LIMIT 1");
+        $stmt->execute(array(':email' => $email));
         if ($user = $stmt->fetchObject()) {
             return $user;
         }
@@ -55,29 +67,38 @@ class UserModel
         $password_hash = password_hash($password, Config::get('password_algorithm'), ['cost' => Config::get('password_cost')]);
         $dbc = Database::getFactory()->getConnection();
         $stmt = $dbc->prepare("INSERT INTO User(id, username, email, password, torrent_pass) VALUES(:id, :username, :email, :password, :torrent_pass)");
+        $id = Text::random_str(8);
         //TODO Make sure id is free
         $success = $stmt->execute(array(
-            ':id' => substr(uniqid(), 0, 8),
+            ':id' => $id,
             ':username' => $username,
             ':email' => $email,
             ':password' => $password_hash,
-            ':torrent_pass' => (uniqid("", true) . uniqid())
+            ':torrent_pass' => Text::random_str(40)
         ));
         if ($success) {
-            return true;
+            return self::getUser($id);
         }
-        return $stmt->errorInfo();
+        return false;
     }
 
 
     /**
-     * @param $username : string for username wish
-     * @param $password : password string
      * @param $email : string for email
-     * @param $applyID : int for apply table row
      */
-    public static function applyUser($username, $password, $email, $applyID)
+    public static function applyUser($country, $email, $reason, $offer)
     {
-
+        $dbc = Database::getFactory()->getConnection();
+        $stmt = $dbc->prepare("INSERT INTO Application(country, email, reason, offer) VALUES (:country, :email, :reason, :offer)");
+        $stmt->execute([
+            ':country' => $country,
+            ':email' => $email,
+            ':reason' => $reason,
+            ':offer' => $offer
+        ]);
+        if ($stmt->rowCount() == 1){
+            return true;
+        }
+        return false;
     }
 }

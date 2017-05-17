@@ -4,6 +4,7 @@ namespace App\Model;
 
 use App\Core\Database;
 use App\Core\Bencode;
+use App\Core\Text;
 
 class TorrentModel
 {
@@ -19,16 +20,19 @@ class TorrentModel
         return false;
     }
 
-    public static function getTorrents($category = 0, $page = 1, $limit = 25)
+    public static function getTorrents($category = 0, $order = [], $page = 1, $limit = 25)
     {
         if ($page <= 0) {
             $page = 1;
         }
+        $order[0] = isset($order[0]) ? $order[0] : 'added';
+        $order[1] = isset($order[1]) ? $order[1] : 'DESC';
         $page = (($page - 1) * $limit);
         $dbc = Database::getFactory()->getConnection();
-        $stmt = $dbc->prepare("SELECT Torrent.id, info_hash, Torrent.name, description, magnet, date_added as added, seed, leech, Torrent.total_size as size, Category.id as category_id, Category.name as category_name, User.username FROM Torrent LEFT JOIN User ON Torrent.user_id = User.id LEFT JOIN Category ON Torrent.category_id = Category.id " . ($category > 0 ? "WHERE Category.id = :category OR Category.parent_id = :category" : '') . " GROUP BY Torrent.id LIMIT $page, $limit");
+        $sql = "SELECT Torrent.id, info_hash, Torrent.name, description, magnet, date_added as added, seed, leech, Torrent.total_size as size, Torrent.hide_user as hide_user, Category.id as category_id, Category.name as category_name, Category.icon as category_icon, User.username FROM Torrent LEFT JOIN User ON Torrent.user_id = User.id LEFT JOIN Category ON Torrent.category_id = Category.id " . ($category > 0 ? "WHERE Category.id = :category OR Category.parent_id = :category" : '') . " GROUP BY Torrent.id" . (is_array($order) ? ' ORDER BY ' . $order[0] . ' ' . $order[1] : '') . " LIMIT $page, $limit";
+        $stmt = $dbc->prepare($sql);
         $parameters = [];
-        if ($category > 0){
+        if ($category > 0) {
             $parameters[':category'] = $category;
         }
         $stmt->execute($parameters);
@@ -41,8 +45,7 @@ class TorrentModel
     {
         $dbc = Database::getFactory()->getConnection();
         $stmt = $dbc->prepare("INSERT INTO Torrent(id, info_hash, user_id, name, description, path, magnet, total_size, category_id) VALUES(:id, :info_hash, :user_id, :name, :description, :path, :magnet, :total, :category_id)");
-        //TODO Check if free
-        $id = substr(uniqid(), 0, 12);
+        $id = self::getNewId();
         $success = $stmt->execute(array(
             ':id' => $id,
             ':info_hash' => $torrent['info_hash'],
@@ -61,7 +64,19 @@ class TorrentModel
         return false;
     }
 
-    public static function removeTorrent($id){
+    private static function getNewId(){
+        $id = Text::random_str(12);
+        $dbc = Database::getFactory()->getConnection();
+        $stmt = $dbc->prepare("SELECT id FROM Torrent WHERE id = :id");
+        $stmt->execute([':id' => $id]);
+        while ($exists = $stmt->fetchObject()){
+            $id = Text::random_str(12);
+        }
+        return $id;
+    }
+
+    public static function removeTorrent($id)
+    {
         $dbc = Database::getFactory()->getConnection();
         $stmt = $dbc->prepare("DELETE FROM Torrent WHERE id = :id");
         return $stmt->execute([
@@ -73,10 +88,14 @@ class TorrentModel
     public static function torrentPages($query, $parameters = [], $limit = 25)
     {
         $dbc = Database::getFactory()->getConnection();
-        $sql = preg_replace("/.*FROM(.*)LIMIT.*/i", 'SELECT (COUNT(*) / ' . $limit . ') as pages FROM $1', $query);
+        $sql = preg_replace("/.*FROM(.*)GROUP.*/i", 'SELECT COALESCE(COUNT(*) / ' . $limit . ', 0) as pages FROM $1', $query);
         $stmt = $dbc->prepare($sql);
         $stmt->execute($parameters);
-        return ceil($stmt->fetchObject()->pages);
+        $pages = $stmt->fetchObject();
+        if (is_object($pages)) {
+            return ceil($pages->pages);
+        }
+        return 0;
     }
 
     public static function getRecent($limit = 5)
@@ -97,26 +116,31 @@ class TorrentModel
         $dbc = Database::getFactory()->getConnection();
     }
 
-    public static function decodeTorrent($filePath){
+    public static function decodeTorrent($filePath, $onlyFile = false)
+    {
         $handle = fopen($filePath, "r");
         $torrentFile = Bencode::decode(fread($handle, filesize($filePath)));
         fclose($handle);
 
+        if ($onlyFile){
+            return $torrentFile;
+        }
+
         $torrent = ['name' => $torrentFile['info']['name'], 'info_hash' => sha1(Bencode::build($torrentFile['info']), true), 'trackers' => []];
         $size = 0;
-        if(isset($torrentFile['info']['files'])){
-            foreach ($torrentFile['info']['files'] as $file){
+        if (isset($torrentFile['info']['files'])) {
+            foreach ($torrentFile['info']['files'] as $file) {
                 $size += $file['length'];
             }
-        }else{
+        } else {
             $size = $torrentFile['info']['length'];
         }
-        $torrent['size'] = self::formatBytes($size);
+        $torrent['size'] = $size;
 
-        $torrent['trackers'][] = $torrentFile['announce'];
-        if (isset($torrentFile['announce-list'])){
-            foreach ($torrentFile['announce-list'] as $tracker){
-                $torrent['trackers'][] = $tracker;
+        $torrent['trackers']['announce'] = $torrentFile['announce'];
+        if (isset($torrentFile['announce-list'])) {
+            foreach ($torrentFile['announce-list'] as $tracker) {
+                $torrent['trackers']['announce-list'][] = $tracker;
             }
         }
 
@@ -124,29 +148,16 @@ class TorrentModel
     }
 
     //TODO Generate based on file that was uploaded
-    public static function generateMagnet($info_hash, $trackers){
+    public static function generateMagnet($info_hash, $trackers)
+    {
         $magnetLink = 'magnet:?xt=urn:btih:' . bin2hex($info_hash);
-        foreach ($trackers as $tracker){
-            if(is_string($tracker)){
+        foreach ($trackers as $tracker) {
+            if (is_string($tracker)) {
                 $magnetLink .= '&tr=' . $tracker;
                 continue;
             }
             $magnetLink .= '&tr=' . $tracker[0];
         }
         return $magnetLink;
-    }
-
-    private static function formatBytes($bytes, $precision = 2) {
-        $units = array('B', 'KB', 'MB', 'GB', 'TB');
-
-        $bytes = max($bytes, 0);
-        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
-        $pow = min($pow, count($units) - 1);
-
-        // Uncomment one of the following alternatives
-        // $bytes /= pow(1024, $pow);
-        $bytes /= (1 << (10 * $pow));
-
-        return round($bytes, $precision) . ' ' . $units[$pow];
     }
 }
