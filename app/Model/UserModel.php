@@ -4,11 +4,20 @@ namespace App\Model;
 
 use App\Core\Database;
 use App\Core\Config;
+use App\Core\Model;
 use App\Core\Text;
 
-class UserModel
+/**
+ * Class UserModel
+ * @package App\Model
+ */
+class UserModel extends Model
 {
 
+    /**
+     * @param $user_id
+     * @return mixed|null
+     */
     public static function getUser($user_id)
     {
         $dbc = Database::getFactory()->getConnection();
@@ -20,6 +29,10 @@ class UserModel
         return null;
     }
 
+    /**
+     * @param $username
+     * @return mixed|null
+     */
     public static function getUserByUsername($username)
     {
         $dbc = Database::getFactory()->getConnection();
@@ -31,6 +44,10 @@ class UserModel
         return null;
     }
 
+    /**
+     * @param $email
+     * @return mixed|null
+     */
     public static function getUserByEmail($email)
     {
         $dbc = Database::getFactory()->getConnection();
@@ -42,11 +59,16 @@ class UserModel
         return null;
     }
 
-    public static function userLogin($email, $password)
+    /**
+     * @param $login
+     * @param $password
+     * @return array|bool
+     */
+    public static function userLogin($login, $password)
     {
         $dbc = Database::getFactory()->getConnection();
-        $userStmt = $dbc->prepare("SELECT id, password FROM User WHERE email = :email LIMIT 1");
-        $userStmt->execute(array(':email' => $email));
+        $userStmt = $dbc->prepare("SELECT id, password FROM User WHERE username = :login OR email = :login LIMIT 1");
+        $userStmt->execute(array(':login' => $login));
         if ($user = $userStmt->fetchObject()) {
             if (password_verify($password, $user->password)) {
                 return $user->id;

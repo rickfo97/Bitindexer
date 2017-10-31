@@ -4,10 +4,19 @@ namespace App\Model;
 
 use App\Core\Database;
 use App\Core\Bencode;
+use App\Core\Model;
 use App\Core\Text;
 
-class TorrentModel
+class TorrentModel extends Model
 {
+
+    protected $table = 'Torrent';
+    protected $parameters = ['id', 'info_hash', 'user_id', 'path', 'magnet', 'name', 'category_id', 'total_size'];
+
+    public function __construct()
+    {
+        parent::__construct();
+    }
 
     public static function getTorrent($id)
     {
@@ -62,6 +71,13 @@ class TorrentModel
             return $id;
         }
         return false;
+    }
+
+    public function create()
+    {
+        $this->object->id = self::getNewId();
+        $this->object->path = 'torrents/' . $this->object->id . '.torrent';
+        return parent::create();
     }
 
     private static function getNewId(){

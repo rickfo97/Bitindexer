@@ -26,24 +26,31 @@ class TorrentController
         $torrents = [];
         $pages = 0;
         $order = [];
-        if (isset($_REQUEST['order_column'])) {
-            $order[0] = $_REQUEST['order_column'];
-            $order[1] = isset($_REQUEST['order']) ? $_REQUEST['order'] : 'DESC';
+        if (isset($_REQUEST['oc'])) {
+            $order[0] = $_REQUEST['oc'];
+            $order[1] = isset($_REQUEST['o']) ? $_REQUEST['o'] : 'DESC';
         }
-        if (isset($_REQUEST['category']) && $_REQUEST['category'] > 0) {
-            $torrents = TorrentModel::getTorrents($_REQUEST['category'], $order, $page);
-            $pages = TorrentModel::torrentPages($torrents['query'], [':category' => $_REQUEST['category']]);
+        if (isset($_REQUEST['c']) && $_REQUEST['c'] > 0) {
+            $torrents = TorrentModel::getTorrents($_REQUEST['c'], $order, $page);
+            $pages = TorrentModel::torrentPages($torrents['query'], [':category' => $_REQUEST['c']]);
         } else {
             $torrents = TorrentModel::getTorrents(0, $order, $page);
             $pages = TorrentModel::torrentPages($torrents['query']);
         }
         unset($torrents['query']);
-        return View::render('torrent/browse', ['torrents' => $torrents, 'page' => ['current' => $page, 'max' => $pages]]);
+        $data = ['torrents' => $torrents, 'page' => ['current' => $page, 'max' => $pages]];
+        return Route::$ajax ? json_encode($data) : View::render('torrent/browse', $data);
     }
 
     public function showPage($id)
     {
-        return View::render('torrent/view', ['torrent' => TorrentModel::getTorrent($id)]);
+        $torrent = new TorrentModel();
+        $torrent = $torrent->find($id);
+        $scrape = Api::scrapeTracker($torrent->get()->info_hash);
+        $torrent->set('seed', $scrape['files'][$torrent->get()->info_hash]['complete']);
+        $torrent->set('leech', $scrape['files'][$torrent->get()->info_hash]['incomplete']);
+        $torrent->save();
+        return View::render('torrent/view', ['torrent' => $torrent->get()]);
     }
 
     public function search($page = 1)
@@ -67,17 +74,20 @@ class TorrentController
         }
         if (isset($_FILES['torrentFile'])) {
             $torrent = TorrentModel::decodeTorrent($_FILES['torrentFile']['tmp_name']);
+            $torrentModel = new TorrentModel();
+            $torrentModel
+                ->set('name', $_POST['name'])
+                ->set('info_hash', $torrent['info_hash'])
+                ->set('description', strlen($_POST['description']) > 0 ? $_POST['description'] : '')
+                ->set('magnet', TorrentModel::generateMagnet($torrent['info_hash'], $torrent['trackers']))
+                ->set('total_size', $torrent['size'])
+                ->set('category_id', $_POST['category'])
+                ->set('user_id', $_SESSION['user_id'])
+                ->create();
 
-            $id = TorrentModel::addTorrent([
-                'name' => $_POST['name'],
-                'info_hash' => $torrent['info_hash'],
-                'description' => $_POST['description'],
-                'magnet' => TorrentModel::generateMagnet($torrent['info_hash'], $torrent['trackers']),
-                'total_size' => $torrent['size'],
-                'category' => $_POST['category']
-            ]);
-
-            if ($id !== false) {
+            if (isset($torrentModel->get()->id)) {
+                $id = $torrentModel->get()->id;
+                echo $id;
                 if (move_uploaded_file($_FILES['torrentFile']['tmp_name'], $_SERVER['DOCUMENT_ROOT'] . '/torrents/' . $id . '.torrent')) {
                     if (strlen(Config::get('tracker')) > 0){
                         Api::callTracker('torrent', 'add', ['info_hash' => $torrent['info_hash'], 'user_id' => Session::getUser()->torrent_pass]);

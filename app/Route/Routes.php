@@ -18,8 +18,6 @@ Route::get('profile', 'UserController@profilePage');
 Route::get('profile/edit', 'UserController@editPage');
 Route::get('logout', 'UserController@logout');
 
-Route::get('admin/test', 'UserController@test');
-
 Route::get('user/{id}', 'UserController@userPage');
 
 Route::post('login', 'UserController::login');
@@ -32,6 +30,10 @@ Route::get('download/{id}', 'TorrentController@download');
 Route::get('upload', 'TorrentController@uploadPage');
 Route::post('upload', 'TorrentController@upload');
 Route::patch('torrent/{id}', 'TorrentController@update');
+Route::delete('torrent/{id}', 'TorrentController@remove');
+
+//Admin paths
+Route::get('admin', 'AdminController@index');
 
 //Redirects
 Route::get('torrent', function (){

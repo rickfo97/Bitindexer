@@ -68,14 +68,16 @@ class UserController
 
     public function userPage($id)
     {
-
+        $user = new UserModel();
+        $user = $user->find($id)->get();
+        return View::render('user/profile', ['user' => $user]);
     }
 
     public static function login()
     {
-        $email = $_POST['email'];
+        $login = $_POST['login'];
         $password = $_POST['password'];
-        $user = UserModel::userLogin($email, $password);
+        $user = UserModel::userLogin($login, $password);
         if (!is_array($user) && $user !== false) {
             $_SESSION['user_id'] = $user;
             print_r($_SESSION);

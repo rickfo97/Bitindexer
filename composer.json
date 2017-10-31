@@ -1,11 +1,13 @@
 {
     "require": {
         "twig/twig": "~2.0",
-        "filp/whoops": "^2.1"
+        "filp/whoops": "^2.1",
+      	"erusev/parsedown": "1.6.3",
+        "aptoma/twig-markdown": "^3.0"
     },
 	"autoload":{
 		"psr-4":{
-			"Rickfo\\Bitindexer\\App\\": "app"
+			"App\\": "app"
 		}
 	}
 }

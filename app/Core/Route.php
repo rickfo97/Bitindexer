@@ -63,7 +63,7 @@ class Route
                 }
             }
         }
-        return null;
+        return View::render('error/404');
     }
 
     private static function match($uri, $toMatch)

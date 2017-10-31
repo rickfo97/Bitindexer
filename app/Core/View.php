@@ -7,6 +7,9 @@ class View
 
     public static function render($path, $params = array())
     {
+        if (Route::$ajax){
+            return json_encode($params);
+        }
         $base = __DIR__ . '/../../template/';
         if (file_exists($base . $path)){
             return Twig::render($path, $params);
@@ -20,7 +23,7 @@ class View
         if (file_exists($base . $path . '.html')){
             return Twig::render($path . '.html', $params);
         }
-        return Twig::render('error/404.twig', []);
+        return Twig::render('error/dev-404.twig', $params);
     }
 
 }

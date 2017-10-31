@@ -9,32 +9,38 @@
 {% endblock %}
 {% block content %}
     {% include "layout/search.twig" %}
-    <table class="table table-striped text-left">
+    <table class="table table-bordered table-hover table-striped torrent-table">
         <thead>
             <tr>
-                <th>Category</th>
+                <th class="text-center" style="width:80px">Category</th>
                 <th>Name</th>
-                <th>Added</th>
-                <th>Size</th>
-                <th>Seeds</th>
-                <th>Leech</th>
-                <th>Uploader</th>
+                <th class="text-center" style="width: 70px">Link</th>
+                <th class="text-center{% if get['oc'] == 'size' %}{% if get['o'] == 'asc' %} sorting_asc{% else %} sorting_desc{% endif %}{% else %} sorting{% endif %}" style="width: 100px"><a href="/browse?{% if get['c'] %}c={{ get['c'] }}&{% endif %}oc=size&o={% if get['o'] == 'desc' %}asc{% else %}desc{% endif %}"></a>Size</th>
+                <th class="text-center{% if get['oc'] == 'added' %}{% if get['o'] == 'asc' %} sorting_asc{% else %} sorting_desc{% endif %}{% else %} sorting{% endif %}" style="width: 140px"><a href="/browse?{% if get['c'] %}c={{ get['c'] }}&{% endif %}oc=added&o={% if get['o'] == 'desc' %}asc{% else %}desc{% endif %}"></a>Date</th>
+                <th class="text-center{% if get['oc'] == 'seed' %}{% if get['o'] == 'asc' %} sorting_asc{% else %} sorting_desc{% endif %}{% else %} sorting{% endif %}" style="width: 50px"><a href="/browse?{% if get['c'] %}c={{ get['c'] }}&{% endif %}oc=seed&o={% if get['o'] == 'desc' %}asc{% else %}desc{% endif %}"></a><i class="fa fa-arrow-up"></i></th>
+                <th class="text-center{% if get['oc'] == 'leech' %}{% if get['o'] == 'asc' %} sorting_asc{% else %} sorting_desc{% endif %}{% else %} sorting{% endif %}" style="width: 50px"><a href="/browse?{% if get['c'] %}c={{ get['c'] }}&{% endif %}oc=leech&o={% if get['o'] == 'desc' %}asc{% else %}desc{% endif %}"></a><i class="fa fa-arrow-down"></i></th>
             </tr>
         </thead>
         <tbody>
         {% for torrent in torrents %}
             <tr>
-                <td><a href="/browse?category={{ torrent.category_id }}">{{ torrent.category_icon ?? torrent.category_name }}</a></td>
-                <td><a href="/torrent/{{ torrent.id }}">{{ torrent.name }}</a></td>
-                <td>{{ torrent.added }}</td>
+                <td><a href="/browse?c={{ torrent.category_id }}">{{ torrent.category_icon ?? torrent.category_name }}</a></td>
+                <td class="text-left"><a href="/torrent/{{ torrent.id }}">{{ torrent.name }}</a></td>
+                <td><a href="/download/{{ torrent.id }}"><i class="fa fa-fw fa-download"></i></a><a href="{{ torrent.magnet|format_magnet }}"><i class="fa fa-fw fa-magnet"></i></a></td>
                 <td>{{ torrent.size|format_bytes }}</td>
+                <td>{{ torrent.added }}</td>
                 <td class="seeds">{{ torrent.seed }}</td>
                 <td class="leech">{{ torrent.leech }}</td>
-                <td>{{ torrent.hide_user ? 'Anonymous' : (torrent.username ?: 'Anonymous') }}</td>
             </tr>
         {% else %}
             <tr>
+                <td></td>
                 <td>No torrents found</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
         {% endfor %}
         </tbody>

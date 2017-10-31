@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: Rickardh
- * Date: 2017-04-28
- * Time: 23:59
- */
 
 namespace App\Core;
 
@@ -13,11 +7,15 @@ use App\Model\UserModel;
 
 class Session
 {
+
+    private static $userid;
+
     public static function getUser()
     {
-        if (!isset($_SESSION['user_id'])){
+        if (!isset($_SESSION['user_id']) && !isset($_COOKIE['session_id'])){
             return false;
         }
+        $id = isset($_COOKIE['session_id']) ? $_COOKIE['session_id'] : $_SESSION['user_id'];
         $user = UserModel::getUser($_SESSION['user_id']);
         if ($user){
             return $user;

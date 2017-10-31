@@ -19,16 +19,18 @@
 
 </head>
 <body>
-<div id="content" class="container-fluid text-center">
-    <div class="col-md-4 col-md-offset-4 content">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                <div class="row text-center">
-                    <h1>{% block pagetitle %}{% endblock %}</h1>
+<div class="container">
+    <div class="splash">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">{% block pagetitle %}{% endblock %}</h3>
+                    </div>
+                    <div class="panel-body">
+                        {% block content %}{% endblock %}
+                    </div>
                 </div>
-            </div>
-            <div class="panel-body">
-                {% block content %}{% endblock %}
             </div>
         </div>
     </div>

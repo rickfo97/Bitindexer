@@ -30,4 +30,9 @@ class Text
         }
         return $str;
     }
+
+    public static function formatMagnet($magnet)
+    {
+        return preg_replace('/(.*){id}(.*)/i', '${1}' . Session::getUser()->torrent_pass . '$2', $magnet);
+    }
 }

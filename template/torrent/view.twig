@@ -8,6 +8,26 @@
     {{ torrent.name }}
 {% endblock %}
 {% block content %}
+    <a class="btn btn-primary" href="/download/{{ torrent.id }}">Download</a> <a class="btn btn-primary" href="{{ torrent.magnet|format_magnet }}">Magnet</a>
+    <div>
+        {{ parsedown(torrent.description)|raw }}
+    </div>
     {#<a class="btn btn-primary" href="/torrents/{{ torrent.id }}.torrent" download="{{ torrent.name }}.torrent">Download</a>#}
-    <a class="btn btn-primary" href="/download/{{ torrent.id }}">Download</a>
+    <br>
+    <hr>
+    <div id="comments">
+        {% for comment in torrent.comments %}
+            <div class="media">
+                <div class="media-left">
+                    <img src="{{ comment.user.avatar }}" class="media-object" style="width:45px">
+                </div>
+                <div class="media-body">
+                    <h4 class="media-heading">{{ comment.user.username }}<small><i>Posted on {{ comment.posted }}</i></small></h4>
+                    {{ parsedown(comment.comment) }}
+                </div>
+            </div>
+        {% else %}
+            <p>No comments</p>
+        {% endfor %}
+    </div>
 {% endblock %}
